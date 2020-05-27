@@ -37,6 +37,7 @@
       <solr.directory>${project.build.directory}/solr-${solr.version}</solr.directory>
       <licenseName>enterprise</licenseName>
       <license.update.dryrun>true</license.update.dryrun>
+      <elastic.version>7.7.0</elastic.version>
    </properties>
    <modules>
       <module>search-services</module>
