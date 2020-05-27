@@ -31,6 +31,9 @@ import static java.util.Optional.ofNullable;
 
 import static org.alfresco.solr.SolrInformationServer.CASCADE_TRACKER_ENABLED;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -38,6 +41,7 @@ import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.alfresco.elastic.ElasticServer;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.solr.AlfrescoCoreAdminHandler;
 import org.alfresco.solr.AlfrescoSolrDataModel;
@@ -79,6 +83,9 @@ import org.slf4j.LoggerFactory;
 public class SolrCoreLoadListener extends AbstractSolrEventListener
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SolrCoreLoadListener.class);
+    
+    private ElasticServer elasticServer;
+
 
     /**
      * Builds a new listener instance with the given {@link SolrCore} (event source).
@@ -231,6 +238,19 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
 
         //Add the commitTracker to the list of scheduled trackers that can be shutdown
         trackers.add(commitTracker);
+        
+        // Check if elastic index exists
+        elasticServer = new ElasticServer();
+        if (!elasticServer.existsIndex(getCore().getName()))
+        {
+        	File elasticIndexMappingFile = new File(coreContainer.getSolrHome() + "/templates/rerank/conf/schema.json");
+        	try {
+				elasticServer.createIndex(getCore().getName(), Files.readString(elasticIndexMappingFile.toPath()));
+			} catch (IOException e) {
+				LOGGER.error("File " + elasticIndexMappingFile.getPath() + " couldn't be opened!");
+			}
+        }
+        
     }
 
     List<Tracker> createAndScheduleCoreTrackers(SolrCore core,
