@@ -1,0 +1,720 @@
+{
+  "mappings": {
+   "properties" : {
+    "_version_" : { "type" : "text", "store" : "false", "index" : "false" },
+    "_root_" : { "type" : "text", "store" : "true", "index" : "false" },
+    "id" : { "type" : "text", "store" : "false", "index" : "false" },
+    "MINHASH" : { "type" : "text", "store" : "false", "index" : "false" },
+    "LID" : { "type" : "text", "store" : "false", "index" : "false" },
+    "PARENT" : { "type" : "text", "store" : "false", "index" : "false" },
+    "PRIMARYPARENT" : { "type" : "text", "store" : "false", "index" : "false" },
+    "ANCESTOR" : { "type" : "text", "store" : "false", "index" : "false" },
+    "PATH" : { "type" : "text", "store" : "false", "index" : "false" },
+    "QNAME" : { "type" : "text", "store" : "false", "index" : "false" },
+    "PRIMARYASSOCTYPEQNAME" : { "type" : "text", "store" : "false", "index" : "false" },
+    "PRIMARYASSOCQNAME" : { "type" : "text", "store" : "false", "index" : "false" },
+    "ASSOCTYPEQNAME" : { "type" : "text", "store" : "false", "index" : "false" },
+    "ISNODE" : { "type" : "text", "store" : "false", "index" : "false" },
+    "TYPE" : { "type" : "text", "store" : "true", "index" : "false" },
+    "ASPECT" : { "type" : "text", "store" : "true", "index" : "false" },
+    "PROPERTIES" : { "type" : "text", "store" : "true", "index" : "false" },
+    "NULLPROPERTIES" : { "type" : "text", "store" : "true", "index" : "false" },
+    "FIELDS" : { "type" : "text", "store" : "true", "index" : "false" },
+    "DBID" : { "type" : "long", "store" : "false", "index" : "false" },
+    "TXID" : { "type" : "long", "store" : "false", "index" : "false" },
+    "INTXID" : { "type" : "long", "store" : "false", "index" : "false" },
+    "ACLTXID" : { "type" : "long", "store" : "false", "index" : "false" },
+    "INACLTXID" : { "type" : "long", "store" : "false", "index" : "false" },
+    "TXCOMMITTIME" : { "type" : "long", "store" : "false", "index" : "false" },
+    "ACLTXCOMMITTIME" : { "type" : "long", "store" : "false", "index" : "false" },
+    "ACLID" : { "type" : "long", "store" : "false", "index" : "false" },
+    "PARENTASSOCCRC" : { "type" : "long", "store" : "false", "index" : "false" },
+    "CASCADETX" : { "type" : "long", "store" : "false", "index" : "false" },
+    "LATEST_APPLIED_CONTENT_VERSION_ID" : { "type" : "text", "store" : "false", "index" : "false" },
+    "LAST_INCOMING_CONTENT_VERSION_ID" : { "type" : "text", "store" : "false", "index" : "false" },
+    "S_TXID" : { "type" : "long", "store" : "false", "index" : "false" },
+    "S_INTXID" : { "type" : "long", "store" : "false", "index" : "false" },
+    "S_ACLTXID" : { "type" : "long", "store" : "false", "index" : "false" },
+    "S_INACLTXID" : { "type" : "long", "store" : "false", "index" : "false" },
+    "S_TXCOMMITTIME" : { "type" : "long", "store" : "false", "index" : "false" },
+    "S_ACLTXCOMMITTIME" : { "type" : "long", "store" : "false", "index" : "false" },
+    "EXCEPTIONMESSAGE" : { "type" : "text", "store" : "false", "index" : "false" },
+    "EXCEPTIONSTACK" : { "type" : "text", "store" : "false", "index" : "false" },
+    "READER" : { "type" : "text", "store" : "true", "index" : "false" },
+    "DENIED" : { "type" : "text", "store" : "true", "index" : "false" },
+    "OWNER" : { "type" : "text", "store" : "true", "index" : "false" },
+    "TENANT" : { "type" : "text", "store" : "true", "index" : "false" },
+    "DOC_TYPE" : { "type" : "text", "store" : "false", "index" : "false" },
+    "GEO" : { "type" : "text", "store" : "false", "index" : "false" },
+    "min_hash" : { "type" : "text", "store" : "true", "index" : "true" },
+    "_dummy_" : { "type" : "text", "store" : "false", "index" : "false" },
+    "SITE" : { "type" : "text", "store" : "true", "index" : "false" },
+    "TAG" : { "type" : "text", "store" : "true", "index" : "false" },
+    "NPATH" : { "type" : "text", "store" : "true", "index" : "false" },
+    "APATH" : { "type" : "text", "store" : "true", "index" : "false" },
+    "PNAME" : { "type" : "text", "store" : "true", "index" : "false" },
+    "ANAME" : { "type" : "text", "store" : "true", "index" : "false" },
+    "suggest" : { "type" : "text", "store" : "false", "index" : "true" }
+   },
+   "dynamic_templates" : [
+    {
+     "template_any@s_@" : {
+      "match" : "any@s_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_encrypted@s_@" : {
+      "match" : "encrypted@s_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_part@sd@" : {
+      "match" : "part@sd@*",
+      "match_mapping_type" : "long",
+      "mapping" : { "type" : "long", "store" : "false", "index" : "true" }
+     }
+    },
+    {
+     "template_int@s_@" : {
+      "match" : "int@s_@*",
+      "match_mapping_type" : "long",
+      "mapping" : { "type" : "integer", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_long@s_@" : {
+      "match" : "long@s_@*",
+      "match_mapping_type" : "long",
+      "mapping" : { "type" : "long", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_float@s_@" : {
+      "match" : "float@s_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_double@s_@" : {
+      "match" : "double@s_@*",
+      "match_mapping_type" : "double",
+      "mapping" : { "type" : "double", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_date@s_@" : {
+      "match" : "date@s_@*",
+      "match_mapping_type" : "date",
+      "mapping" : { "type" : "date", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_datetime@s_@" : {
+      "match" : "datetime@s_@*",
+      "match_mapping_type" : "date",
+      "mapping" : { "type" : "date", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_boolean@s_@" : {
+      "match" : "boolean@s_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_qname@s_@" : {
+      "match" : "qname@s_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_category@s_@" : {
+      "match" : "category@s_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_noderef@s_@" : {
+      "match" : "noderef@s_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_childassocref@s_@" : {
+      "match" : "childassocref@s_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_assocref@s_@" : {
+      "match" : "assocref@s_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_path@s_@" : {
+      "match" : "path@s_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_locale@s_@" : {
+      "match" : "locale@s_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_period@s_@" : {
+      "match" : "period@s_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_int@sd@" : {
+      "match" : "int@sd@*",
+      "match_mapping_type" : "long",
+      "mapping" : { "type" : "integer", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_long@sd@" : {
+      "match" : "long@sd@*",
+      "match_mapping_type" : "long",
+      "mapping" : { "type" : "long", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_float@sd@" : {
+      "match" : "float@sd@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_double@sd@" : {
+      "match" : "double@sd@*",
+      "match_mapping_type" : "double",
+      "mapping" : { "type" : "double", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_date@sd@" : {
+      "match" : "date@sd@*",
+      "match_mapping_type" : "date",
+      "mapping" : { "type" : "date", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_datetime@sd@" : {
+      "match" : "datetime@sd@*",
+      "match_mapping_type" : "date",
+      "mapping" : { "type" : "date", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_boolean@sd@" : {
+      "match" : "boolean@sd@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_category@sd@" : {
+      "match" : "category@sd@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_noderef@sd@" : {
+      "match" : "noderef@sd@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_any@m_@" : {
+      "match" : "any@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_encrypted@m_@" : {
+      "match" : "encrypted@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_int@m_@" : {
+      "match" : "int@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_long@m_@" : {
+      "match" : "long@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_float@m_@" : {
+      "match" : "float@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_double@m_@" : {
+      "match" : "double@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_date@m_@" : {
+      "match" : "date@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_datetime@m_@" : {
+      "match" : "datetime@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_boolean@m_@" : {
+      "match" : "boolean@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_qname@m_@" : {
+      "match" : "qname@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_category@m_@" : {
+      "match" : "category@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_noderef@m_@" : {
+      "match" : "noderef@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_childassocref@m_@" : {
+      "match" : "childassocref@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_assocref@m_@" : {
+      "match" : "assocref@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_path@m_@" : {
+      "match" : "path@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_locale@m_@" : {
+      "match" : "locale@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_period@m_@" : {
+      "match" : "period@m_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_int@md@" : {
+      "match" : "int@md@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_long@md@" : {
+      "match" : "long@md@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_float@md@" : {
+      "match" : "float@md@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_double@md@" : {
+      "match" : "double@md@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_date@md@" : {
+      "match" : "date@md@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_datetime@md@" : {
+      "match" : "datetime@md@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_boolean@md@" : {
+      "match" : "boolean@md@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_category@md@" : {
+      "match" : "category@md@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_noderef@md@" : {
+      "match" : "noderef@md@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_text@s____@" : {
+      "match" : "text@s____@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_text@s__l_@" : {
+      "match" : "text@s__l_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_text@s__lt@" : {
+      "match" : "text@s__lt@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_text@s___t@" : {
+      "match" : "text@s___t@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_text@s__sort@" : {
+      "match" : "text@s__sort@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_text@sd___@" : {
+      "match" : "text@sd___@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_text@m____@" : {
+      "match" : "text@m____@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_text@m__l_@" : {
+      "match" : "text@m__l_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_text@m__lt@" : {
+      "match" : "text@m__lt@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_text@m___t@" : {
+      "match" : "text@m___t@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_text@md___@" : {
+      "match" : "text@md___@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_mltext@m____@" : {
+      "match" : "mltext@m____@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_mltext@m__l_@" : {
+      "match" : "mltext@m__l_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_mltext@m__lt@" : {
+      "match" : "mltext@m__lt@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_mltext@m___t@" : {
+      "match" : "mltext@m___t@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_mltext@m__sort@" : {
+      "match" : "mltext@m__sort@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@s__size@" : {
+      "match" : "content@s__size@*",
+      "match_mapping_type" : "long",
+      "mapping" : { "type" : "long", "store" : "true", "index" : "false" }
+     }
+    },
+    {
+     "template_content@s__locale@" : {
+      "match" : "content@s__locale@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "true", "index" : "false" }
+     }
+    },
+    {
+     "template_content@s__mimetype@" : {
+      "match" : "content@s__mimetype@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "true", "index" : "false" }
+     }
+    },
+    {
+     "template_content@s__encoding@" : {
+      "match" : "content@s__encoding@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "true", "index" : "false" }
+     }
+    },
+    {
+     "template_content@s__docid@" : {
+      "match" : "content@s__docid@*",
+      "match_mapping_type" : "long",
+      "mapping" : { "type" : "long", "store" : "true", "index" : "false" }
+     }
+    },
+    {
+     "template_content@s__tr_ex@" : {
+      "match" : "content@s__tr_ex@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@s__tr_time@" : {
+      "match" : "content@s__tr_time@*",
+      "match_mapping_type" : "long",
+      "mapping" : { "type" : "long", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@s__tr_status@" : {
+      "match" : "content@s__tr_status@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@s____@" : {
+      "match" : "content@s____@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@s__l_@" : {
+      "match" : "content@s__l_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@s__lt@" : {
+      "match" : "content@s__lt@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@s___t@" : {
+      "match" : "content@s___t@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@m__size@" : {
+      "match" : "content@m__size@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@m__locale@" : {
+      "match" : "content@m__locale@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@m__mimetype@" : {
+      "match" : "content@m__mimetype@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@m__encoding@" : {
+      "match" : "content@m__encoding@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@m__docid@" : {
+      "match" : "content@m__docid@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@m__tr_ex@" : {
+      "match" : "content@m__tr_ex@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@m__tr_time@" : {
+      "match" : "content@m__tr_time@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@m__tr_status@" : {
+      "match" : "content@m__tr_status@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@m____@" : {
+      "match" : "content@m____@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@m__l_@" : {
+      "match" : "content@m__l_@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@m__lt@" : {
+      "match" : "content@m__lt@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_content@m___t@" : {
+      "match" : "content@m___t@*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    },
+    {
+     "template_suggest_" : {
+      "match" : "suggest_*",
+      "match_mapping_type" : "string",
+      "mapping" : { "type" : "text", "store" : "false", "index" : "false" }
+     }
+    }
+   ]
+  }   
+}
