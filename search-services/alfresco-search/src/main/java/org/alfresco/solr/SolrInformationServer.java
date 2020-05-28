@@ -125,6 +125,7 @@ import com.carrotsearch.hppc.IntArrayList;
 import com.carrotsearch.hppc.LongHashSet;
 import com.carrotsearch.hppc.cursors.LongCursor;
 
+import org.alfresco.elastic.ElasticServer;
 import org.alfresco.httpclient.AuthenticationException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
@@ -428,6 +429,12 @@ public class SolrInformationServer implements InformationServer
     private boolean isSkippingDocsInitialized;
 
     private final boolean dateFieldDestructuringHasBeenEnabledOnThisInstance;
+    
+    private ElasticServer elasticServer;
+    public void setElasticServer(ElasticServer elasticServer)
+    {
+    	this.elasticServer = elasticServer;
+    }
 
     static class DocListCollector implements Collector, LeafCollector
     {
@@ -1921,9 +1928,11 @@ public class SolrInformationServer implements InformationServer
     }
 
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public void indexNodes(List<Node> nodes, boolean overwrite) throws IOException, JSONException
     {
+    	
         UpdateRequestProcessor processor = null;
         try (SolrQueryRequest request = newSolrQueryRequest())
         {
@@ -1995,6 +2004,12 @@ public class SolrInformationServer implements InformationServer
                 String query = this.cloud.getQuery(FIELD_DBID, OR, deletedNodeIds, shardDeletedNodeIds, shardUpdatedNodeIds, unknownNodeIds);
                 delDocCmd.setQuery(query);
                 processor.processDelete(delDocCmd);
+                
+            	if (ElasticServer.IS_ENABLED)
+            	{
+            		elasticServer.deleteDocument(core.getName(), deletedNodeIds, shardDeletedNodeIds, shardUpdatedNodeIds, unknownNodeIds);
+            	}
+                
             }
 
             if (!updatedNodeIds.isEmpty() || !unknownNodeIds.isEmpty() || !shardUpdatedNodeIds.isEmpty())
@@ -2071,6 +2086,11 @@ public class SolrInformationServer implements InformationServer
                             populateWithMetadata(basicDocument(nodeMetaData, DOC_TYPE_NODE, PartialSolrInputDocument::new),
                                     nodeMetaData);
                     processor.processAdd(addDocCmd);
+                    
+                	if (ElasticServer.IS_ENABLED)
+                	{
+                		elasticServer.indexDocument(core.getName(), node.getId(), addDocCmd.solrDoc);
+                	}
 
                     this.trackerStats.addNodeTime(System.nanoTime() - start);
                 }

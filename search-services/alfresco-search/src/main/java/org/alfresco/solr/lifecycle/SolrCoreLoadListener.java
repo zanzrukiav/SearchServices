@@ -241,14 +241,18 @@ public class SolrCoreLoadListener extends AbstractSolrEventListener
         
         // Check if elastic index exists
         elasticServer = new ElasticServer();
-        if (!elasticServer.existsIndex(getCore().getName()))
+        if (ElasticServer.IS_ENABLED)
         {
-        	File elasticIndexMappingFile = new File(coreContainer.getSolrHome() + "/templates/rerank/conf/schema.json");
-        	try {
-				elasticServer.createIndex(getCore().getName(), Files.readString(elasticIndexMappingFile.toPath()));
-			} catch (IOException e) {
-				LOGGER.error("File " + elasticIndexMappingFile.getPath() + " couldn't be opened!");
-			}
+	        if (!elasticServer.existsIndex(getCore().getName()))
+	        {
+	        	File elasticIndexMappingFile = new File(coreContainer.getSolrHome() + "/templates/rerank/conf/schema.json");
+	        	try {
+					elasticServer.createIndex(getCore().getName(), Files.readString(elasticIndexMappingFile.toPath()));
+				} catch (IOException e) {
+					LOGGER.error("File " + elasticIndexMappingFile.getPath() + " couldn't be opened!");
+				}
+	        }
+	        informationServer.setElasticServer(elasticServer);
         }
         
     }

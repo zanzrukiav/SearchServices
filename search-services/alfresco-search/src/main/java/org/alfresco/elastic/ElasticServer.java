@@ -27,15 +27,21 @@
 package org.alfresco.elastic;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import org.alfresco.solr.config.ConfigUtil;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpHost;
+import org.apache.solr.common.SolrInputDocument;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestClient;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +69,7 @@ public class ElasticServer
 	/**
 	 * Elastic Server has been configured to be used when "enabled" is true.
 	 */
-	public static boolean enabled = false; 
+	public static boolean IS_ENABLED = false; 
 	
 	public ElasticServer()
 	{
@@ -74,7 +80,7 @@ public class ElasticServer
 		{
 			this.port = Integer.valueOf(portString);
 		}
-		enabled = Objects.nonNull(protocol) && Objects.nonNull(host) && Objects.nonNull(port);
+		IS_ENABLED = Objects.nonNull(protocol) && Objects.nonNull(host) && Objects.nonNull(port);
 		
 	}
 	
@@ -103,7 +109,8 @@ public class ElasticServer
 						+ " while checking if index " + indexName + " exists");
 			}
 		}
-		catch (IOException ioe) {
+		catch (IOException ioe) 
+		{
 			LOGGER.error("Elastic Server " + protocol + "//" + host + ":" + port + " returned an unexpected error", ioe);
 		}
 		return exists;
@@ -128,11 +135,95 @@ public class ElasticServer
 			success = response.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
 			restClient.close();
 		} 
-		catch (IOException e) 
+		catch (IOException ioe) 
 		{
-			LOGGER.error("Elastic Server " + protocol + "//" + host + ":" + port + " invoked with error: ", e);
+			LOGGER.error("Elastic Server " + protocol + "//" + host + ":" + port + " invoked with error: ", ioe);
 		}
 		return success;
+	}
+	
+	/**
+	 * Index SolrDocument properties in Elastic Index
+	 * @param indexName Name of the index to be updated
+	 * @param id Id of the document
+	 * @param solrDocument SoldDocument containing properties to be indexed
+	 */
+	public void indexDocument(String indexName, Long id, SolrInputDocument solrDocument)
+	{
+		
+		JSONObject jsonMapping = new JSONObject();
+		for (String fieldName : solrDocument.getFieldNames())
+		{
+            Object fieldValue = solrDocument.getField(fieldName).getValue();
+            if (fieldValue instanceof ArrayList<?>)
+            {
+            	JSONArray jsonArray = new JSONArray();
+            	ArrayList<?> fieldValues = (ArrayList<?>) fieldValue;
+            	if (!fieldValues.isEmpty())
+            	{
+            		for (Object fv : fieldValues)
+            		{
+            			jsonArray.put(fv); 
+            		}
+            	}
+            	jsonMapping.put(fieldName, jsonArray);
+            }
+            else
+            {
+		        jsonMapping.put(fieldName, fieldValue);
+            }
+		}
+		
+		RestClient restClient = RestClient.builder(new HttpHost(host, port, protocol)).build();
+		Request request = new Request("PUT", "/" + indexName + "/_doc/" + id);
+		request.setJsonEntity(jsonMapping.toString());
+		
+		try {
+			restClient.performRequest(request);
+			restClient.close();
+		}
+		catch (IOException ioe)
+		{
+			LOGGER.error("Elastic Server " + protocol + "//" + host + ":" + port
+					+ " returned an unexpected error indexing node " + id + " when parsing following properties: "
+					+ jsonMapping.toString(), ioe);
+		}
+		
+	}
+	
+	/**
+	 * Remove a list of document Ids from Elastic Index
+	 * @param indexName Name of the index
+	 * @param idsLists List of Ids to be removed
+	 */
+	@SuppressWarnings({ "unchecked" })
+	public void deleteDocument(String indexName, List<Long>... idsLists)
+	{
+		RestClient restClient = RestClient.builder(new HttpHost(host, port, protocol)).build();
+        for (Collection<Long> ids : idsLists)
+        {
+            for (Object id : ids)
+            {
+        		try
+        		{
+	            	Request request = new Request("DELETE", "/" + indexName + "/_doc/" + id);
+	        		restClient.performRequest(request);
+	        		restClient.close();
+        		}
+        		catch (ResponseException re)
+        		{
+        			if (re.getResponse().getStatusLine().getStatusCode() != HttpStatus.SC_NOT_FOUND)
+        			{
+        				LOGGER.warn("Found non expected HTTP Status " + re.getResponse().getStatusLine().getStatusCode()
+        						+ " while removing document " + id + " from index " + indexName);
+        			}
+        		}
+        		catch (IOException ioe)
+        		{
+        			LOGGER.error("Elastic Server " + protocol + "//" + host + ":" + port + " returned an unexpected error", ioe);
+        		}
+            }
+        }
 	}
 	
 }
