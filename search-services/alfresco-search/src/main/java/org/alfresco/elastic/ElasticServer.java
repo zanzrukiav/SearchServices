@@ -27,12 +27,14 @@
 package org.alfresco.elastic;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import org.alfresco.solr.config.ConfigUtil;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +60,11 @@ public class ElasticServer
 	String host;
 	int port;
 	
+	/**
+	 * Elastic Server has been configured to be used when "enabled" is true.
+	 */
+	public static boolean enabled = false; 
+	
 	public ElasticServer()
 	{
 		this.protocol = ConfigUtil.locateProperty(ELASTIC_PROTOCOL, null);
@@ -67,6 +74,7 @@ public class ElasticServer
 		{
 			this.port = Integer.valueOf(portString);
 		}
+		enabled = Objects.nonNull(protocol) && Objects.nonNull(host) && Objects.nonNull(port);
 		
 	}
 	
@@ -80,16 +88,23 @@ public class ElasticServer
 		boolean exists = false;
 		
 		RestClient restClient = RestClient.builder(new HttpHost(host, port, protocol)).build();
-		Request request = new Request("GET", "/alfresco");
+		Request request = new Request("GET", "/" + indexName);
 		try 
 		{
 			Response response = restClient.performRequest(request);
 			exists = response.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
 			restClient.close();
-		} 
-		catch (IOException e) 
+		}
+		catch (ResponseException re)
 		{
-			LOGGER.error("Elastic Server " + protocol + "//" + host + ":" + port + " is not reachable!", e);
+			if (re.getResponse().getStatusLine().getStatusCode() != HttpStatus.SC_NOT_FOUND)
+			{
+				LOGGER.warn("Found non expected HTTP Status " + re.getResponse().getStatusLine().getStatusCode()
+						+ " while checking if index " + indexName + " exists");
+			}
+		}
+		catch (IOException ioe) {
+			LOGGER.error("Elastic Server " + protocol + "//" + host + ":" + port + " returned an unexpected error", ioe);
 		}
 		return exists;
 	}
@@ -105,7 +120,7 @@ public class ElasticServer
 		boolean success = false;
 
 		RestClient restClient = RestClient.builder(new HttpHost(host, port, protocol)).build();
-		Request request = new Request("PUT", "/alfresco");
+		Request request = new Request("PUT", "/" + indexName);
 		request.setJsonEntity(jsonMapping);
 		try 
 		{
@@ -115,7 +130,7 @@ public class ElasticServer
 		} 
 		catch (IOException e) 
 		{
-			LOGGER.error("Elastic Server " + protocol + "//" + host + ":" + port + " is not reachable!", e);
+			LOGGER.error("Elastic Server " + protocol + "//" + host + ":" + port + " invoked with error: ", e);
 		}
 		return success;
 	}
