@@ -1916,6 +1916,13 @@ public class SolrInformationServer implements InformationServer
                     "Text content of Document DBID={} has been marked as updated (latest content version ID = {})",
                     docRef.dbId,
                     (latestAppliedVersionId == CONTENT_UPDATED_MARKER ? "N.A." : latestAppliedVersionId));
+            
+            if (ElasticServer.IS_ENABLED)
+            {
+            	// Replacing the whole document, as updating an existing field is not supported by Elastic
+            	elasticServer.indexDocument(core.getName(), docRef.dbId, addDocCmd.solrDoc);
+            }
+            
         }
         catch (Exception exception)
         {

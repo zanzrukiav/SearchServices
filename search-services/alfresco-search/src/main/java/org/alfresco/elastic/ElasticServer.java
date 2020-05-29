@@ -27,8 +27,10 @@
 package org.alfresco.elastic;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -143,14 +145,32 @@ public class ElasticServer
 	}
 	
 	/**
-	 * Index SolrDocument properties in Elastic Index
-	 * @param indexName Name of the index to be updated
-	 * @param id Id of the document
-	 * @param solrDocument SoldDocument containing properties to be indexed
+	 * Format Date values to Elastic String date format
+	 * @param name Name of the field
+	 * @param date Value of the field
+	 * @return Elastic String date format
 	 */
-	public void indexDocument(String indexName, Long id, SolrInputDocument solrDocument)
+	private static SimpleDateFormat DATE_TIME_FORMATTER = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+	private static SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
+	private String getDateString(String name, Date date)
 	{
-		
+		if (name.startsWith("datetime"))
+		{
+			return DATE_TIME_FORMATTER.format(date);
+		}
+		else
+		{
+			return DATE_FORMATTER.format(date);
+		}
+	}
+	
+	/**
+	 * Build JSON String from SolrDocument object
+	 * @param solrDocument The SolrInputDocument object
+	 * @return String JSON Compliant
+	 */
+	private String getJsonMapping(SolrInputDocument solrDocument)
+	{
 		JSONObject jsonMapping = new JSONObject();
 		for (String fieldName : solrDocument.getFieldNames())
 		{
@@ -163,20 +183,44 @@ public class ElasticServer
             	{
             		for (Object fv : fieldValues)
             		{
-            			jsonArray.put(fv); 
+            			if (fv instanceof Date)
+            			{
+            				jsonArray.put(getDateString(fieldName, (Date) fv));
+            			}
+            			else
+            			{
+            			    jsonArray.put(fv);
+            			}
             		}
             	}
             	jsonMapping.put(fieldName, jsonArray);
+            }
+            else if (fieldValue instanceof Date)
+            {
+            	jsonMapping.put(fieldName, getDateString(fieldName, (Date) fieldValue));
             }
             else
             {
 		        jsonMapping.put(fieldName, fieldValue);
             }
 		}
+		return jsonMapping.toString();
+		
+	}
+	
+	/**
+	 * Index SolrDocument properties in Elastic Index
+	 * @param indexName Name of the index to be updated
+	 * @param id Id of the document to be added
+	 * @param solrDocument SoldDocument containing properties to be indexed
+	 */
+	public void indexDocument(String indexName, Long id, SolrInputDocument solrDocument)
+	{
+		String jsonMapping = getJsonMapping(solrDocument);
 		
 		RestClient restClient = RestClient.builder(new HttpHost(host, port, protocol)).build();
 		Request request = new Request("PUT", "/" + indexName + "/_doc/" + id);
-		request.setJsonEntity(jsonMapping.toString());
+		request.setJsonEntity(jsonMapping);
 		
 		try {
 			restClient.performRequest(request);
@@ -186,9 +230,34 @@ public class ElasticServer
 		{
 			LOGGER.error("Elastic Server " + protocol + "//" + host + ":" + port
 					+ " returned an unexpected error indexing node " + id + " when parsing following properties: "
-					+ jsonMapping.toString(), ioe);
+					+ jsonMapping, ioe);
 		}
+	}
+	
+	/**
+	 * Update SolrDocument properties in Elastic Index
+	 * @param indexName Name of the index to be used
+	 * @param id Id of the document to be updated
+	 * @param solrDocument SoldDocument containing properties to be indexed
+	 */
+	public void updateDocument(String indexName, Long id, SolrInputDocument solrDocument)
+	{
+		String jsonMapping = getJsonMapping(solrDocument);
 		
+		RestClient restClient = RestClient.builder(new HttpHost(host, port, protocol)).build();
+		Request request = new Request("POST", "/" + indexName + "/_update/" + id);
+		request.setJsonEntity(jsonMapping);
+		
+		try {
+			restClient.performRequest(request);
+			restClient.close();
+		}
+		catch (IOException ioe)
+		{
+			LOGGER.error("Elastic Server " + protocol + "//" + host + ":" + port
+					+ " returned an unexpected error updating node " + id + " when parsing following properties: "
+					+ jsonMapping, ioe);
+		}
 	}
 	
 	/**
