@@ -36,6 +36,7 @@ import java.util.Objects;
 
 import org.alfresco.solr.config.ConfigUtil;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHost;
 import org.apache.solr.common.SolrInputDocument;
 import org.elasticsearch.client.Request;
@@ -211,15 +212,17 @@ public class ElasticServer
 	/**
 	 * Index SolrDocument properties in Elastic Index
 	 * @param indexName Name of the index to be updated
-	 * @param id Id of the document to be added
+	 * @param id Id of the document to be modified, this parameter should be NULL for new documents
 	 * @param solrDocument SoldDocument containing properties to be indexed
 	 */
-	public void indexDocument(String indexName, Long id, SolrInputDocument solrDocument)
+	private void indexOrUpdateDocument(String indexName, Long id, SolrInputDocument solrDocument)
 	{
 		String jsonMapping = getJsonMapping(solrDocument);
 		
 		RestClient restClient = RestClient.builder(new HttpHost(host, port, protocol)).build();
-		Request request = new Request("PUT", "/" + indexName + "/_doc/" + id);
+		Request request = (id == null ? 
+				new Request("POST", "/" + indexName + "/_doc/")
+				: new Request("PUT", "/" + indexName + "/_doc/" + id));
 		request.setJsonEntity(jsonMapping);
 		
 		try {
@@ -235,29 +238,110 @@ public class ElasticServer
 	}
 	
 	/**
-	 * Update SolrDocument properties in Elastic Index
-	 * @param indexName Name of the index to be used
-	 * @param id Id of the document to be updated
+	 * Index SolrDocument properties in Elastic Index
+	 * @param indexName Name of the index to be updated
+	 * @param solrDocument SoldDocument containing properties to be indexed
+	 */
+	public void indexDocument(String indexName, SolrInputDocument solrDocument)
+	{
+		indexOrUpdateDocument(indexName, null, solrDocument);
+	}
+	
+	/**
+	 * Index SolrDocument properties in Elastic Index
+	 * @param indexName Name of the index to be updated
+	 * @param id Id of the document to be modified
 	 * @param solrDocument SoldDocument containing properties to be indexed
 	 */
 	public void updateDocument(String indexName, Long id, SolrInputDocument solrDocument)
 	{
-		String jsonMapping = getJsonMapping(solrDocument);
+		indexOrUpdateDocument(indexName, id, solrDocument);
+	}
+	
+	/**
+	 * Build an Elastic JSON Search Query to get a document by DBID
+	 * @param dbId Node id from database
+	 * @return JSON Query to find a document by DBID
+	 */
+	private String buildJsonQueryById(Long dbId)
+	{
+		
+		JSONObject filter = new JSONObject();
+		filter.put("long@s_@{http://www.alfresco.org/model/system/1.0}node-dbid", String.valueOf(dbId));
+		
+		JSONObject query = new JSONObject();
+		query.put("match", filter);
+		
+		JSONObject jsonQuery = new JSONObject();
+		jsonQuery.put("_source", "_id");
+		jsonQuery.put("query", query);
+		
+		return jsonQuery.toString();
+	}
+	
+	/**
+	 * Get Elastic Document Id (_id) from Elastic Search Response
+	 * @param response Elastic Search Response
+	 * @return Elastic Document Id
+	 * @throws UnsupportedOperationException
+	 * @throws IOException
+	 */
+	private Long getIdFromResponse(Response response) throws UnsupportedOperationException, IOException 
+	{
+		
+		String content = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+		
+		JSONObject json = new JSONObject(content);
+		JSONObject hits = json.getJSONObject("hits");
+		JSONArray hitsArray = hits.getJSONArray("hits");
+		
+		if (hitsArray.length() > 1)
+		{
+			throw new RuntimeException("Found " + hitsArray.length() + " elements!");
+		}
+		else if (hitsArray.length() == 0)
+		{
+			LOGGER.warn("The response '" + content + "' does not include a hit!");
+			return null;
+		}
+		else
+		{
+			JSONObject h = hitsArray.getJSONObject(0);
+			return h.getLong("_id");
+		}
+	}
+	
+	/**
+	 * Get Elastic Document Id (_id) for an Index by Alfresco DBID
+	 * @param indexName Name of the index
+	 * @param dbId Alfresco DBID 
+	 * @return Elastic Document Id (_id)
+	 */
+	public Long getDocumentId(String indexName, Long dbId)
+	{
+		
+		Long documentId = null;
+		
+		String jsonQuery = buildJsonQueryById(dbId);
 		
 		RestClient restClient = RestClient.builder(new HttpHost(host, port, protocol)).build();
-		Request request = new Request("POST", "/" + indexName + "/_update/" + id);
-		request.setJsonEntity(jsonMapping);
+		Request request = new Request("GET", "/" + indexName + "/_search");
+		request.setJsonEntity(jsonQuery);
 		
 		try {
-			restClient.performRequest(request);
+			Response response = restClient.performRequest(request);
+			documentId = getIdFromResponse(response);
 			restClient.close();
 		}
 		catch (IOException ioe)
 		{
 			LOGGER.error("Elastic Server " + protocol + "//" + host + ":" + port
-					+ " returned an unexpected error updating node " + id + " when parsing following properties: "
-					+ jsonMapping, ioe);
+					+ " returned an unexpected error while performing following search: "
+					+ jsonQuery, ioe);
 		}
+		
+		return documentId;
+		
 	}
 	
 	/**
@@ -271,11 +355,14 @@ public class ElasticServer
 		RestClient restClient = RestClient.builder(new HttpHost(host, port, protocol)).build();
         for (Collection<Long> ids : idsLists)
         {
-            for (Object id : ids)
+            for (Long id : ids)
             {
+            	
+            	Long documentId = getDocumentId(indexName, id);
+            	
         		try
         		{
-	            	Request request = new Request("DELETE", "/" + indexName + "/_doc/" + id);
+	            	Request request = new Request("DELETE", "/" + indexName + "/_doc/" + documentId);
 	        		restClient.performRequest(request);
 	        		restClient.close();
         		}

@@ -1523,6 +1523,11 @@ public class SolrInformationServer implements InformationServer
                 cmd.overwrite = overwrite;
                 cmd.solrDoc = acl;
                 processor.processAdd(cmd);
+                
+                if (ElasticServer.IS_ENABLED)
+                {
+                	elasticServer.indexDocument(core.getName(), cmd.solrDoc);
+                }
             }
         }
         finally
@@ -1916,11 +1921,12 @@ public class SolrInformationServer implements InformationServer
                     "Text content of Document DBID={} has been marked as updated (latest content version ID = {})",
                     docRef.dbId,
                     (latestAppliedVersionId == CONTENT_UPDATED_MARKER ? "N.A." : latestAppliedVersionId));
-            
+
             if (ElasticServer.IS_ENABLED)
             {
             	// Replacing the whole document, as updating an existing field is not supported by Elastic
-            	elasticServer.indexDocument(core.getName(), docRef.dbId, addDocCmd.solrDoc);
+            	Long docId = elasticServer.getDocumentId(core.getName(), docRef.dbId);
+            	elasticServer.updateDocument(core.getName(), docId, addDocCmd.solrDoc);
             }
             
         }
@@ -2096,7 +2102,8 @@ public class SolrInformationServer implements InformationServer
                     
                 	if (ElasticServer.IS_ENABLED)
                 	{
-                		elasticServer.indexDocument(core.getName(), node.getId(), addDocCmd.solrDoc);
+                		// We are updating as the document could exists before
+                		elasticServer.updateDocument(core.getName(), node.getId(), addDocCmd.solrDoc);
                 	}
 
                     this.trackerStats.addNodeTime(System.nanoTime() - start);
